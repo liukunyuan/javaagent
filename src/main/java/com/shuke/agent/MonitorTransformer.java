@@ -25,8 +25,8 @@ public class MonitorTransformer implements ClassFileTransformer {
 
     final static String prefix = "\nlong startTime = System.currentTimeMillis();\n";
     final static String postfix = "\nlong endTime = System.currentTimeMillis();\n";
-    // 超过100ms才打印
-    final static int limitTimeMillis = 100;
+    // 超过500ms才打印
+    final static int limitTimeMillis = 500;
 
     @Override
     public byte[] transform(ClassLoader loader, String className, Class<?> classBeingRedefined,
