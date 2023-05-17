@@ -73,14 +73,13 @@ public class MonitorTransformer2 implements ClassFileTransformer {
                     try{
 
                         List<String> paramNames = getParamNames(method);
-                        com.shuke.util.LogUtil.info("paramNames:"+paramNames);
                         if(null!=paramNames && paramNames.size()>0){
                             printMethodParams=createJavaString(methodName,paramNames);
                         }
 
 
                     }catch (Exception e){
-                        com.shuke.util.LogUtil.error(e.getMessage(),e);
+//                        com.shuke.util.LogUtil.error(e.getMessage(),e);
                     }
 
 
@@ -88,7 +87,7 @@ public class MonitorTransformer2 implements ClassFileTransformer {
                             "long monitorEnd = (System.currentTimeMillis() - monitorStart) ;"+
                             "com.shuke.util.LogUtil.info(\"" + methodName + " cost(毫秒): \" +monitorEnd); " + printMethodParams+
                             "}";
-                    com.shuke.util.LogUtil.info(body);
+//                    com.shuke.util.LogUtil.info(body);
                     method.insertAfter(body);
                 } catch (CannotCompileException e) {
 //                    e.printStackTrace();
@@ -115,7 +114,6 @@ public class MonitorTransformer2 implements ClassFileTransformer {
             if (attr != null) {
                 int len = ctMethod.getParameterTypes().length;
                 // 非静态的成员函数的第一个参数是this
-                com.shuke.util.LogUtil.info("len:"+len);
                 int pos = Modifier.isStatic(ctMethod.getModifiers()) ? 0 : 1;
                 for (int i = 0; i < len; i++) {
                     paramNames.add(attr.variableName(i +pos));
@@ -138,7 +136,6 @@ public class MonitorTransformer2 implements ClassFileTransformer {
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append("try{");
         for (String arg : params) {
-            com.shuke.util.LogUtil.info("arg:"+arg);
             stringBuilder.append("com.shuke.util.LogUtil.info(\"" + methodName + " cost(毫秒): \" +monitorEnd+\",\"+com.alibaba.fastjson.JSONObject.toJSONString("+arg+"));");
         }
         stringBuilder.append(" }catch (Exception e){}");
