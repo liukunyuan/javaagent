@@ -1,7 +1,6 @@
-package test;
+package com.shuke.agent;
 
 import javassist.*;
-import sun.management.resources.agent;
 
 import java.io.ByteArrayInputStream;
 import java.lang.instrument.ClassFileTransformer;
@@ -10,11 +9,12 @@ import java.security.ProtectionDomain;
 /**
  * 检测方法的执行时间
  */
-public class MyTransformer2 implements ClassFileTransformer {
+public class MonitorTransformer implements ClassFileTransformer {
 
     final static String prefix = "\nlong startTime = System.currentTimeMillis();\n";
     final static String postfix = "\nlong endTime = System.currentTimeMillis();\n";
-
+    // 超过100ms才打印
+    final static int limitTimeMillis = 100;
     @Override
     public byte[] transform(ClassLoader loader, String className, Class<?> classBeingRedefined,
                             ProtectionDomain protectionDomain, byte[] classfileBuffer) {
@@ -26,6 +26,7 @@ public class MyTransformer2 implements ClassFileTransformer {
         if(!className.contains("org.apache.hadoop.hive.metastore.HiveAlterHandler")
                 &&!className.toLowerCase().contains("listener")
                 &&!className.contains("org.apache.hadoop.hive.metastore.api")
+                &&!className.contains("org.apache.hadoop.hive.metastore.HiveMetaStore")
                 &&!(className.toLowerCase().contains("event") && className.contains("org.apache.hadoop.hive.metastore"))){
 
             return null;
@@ -41,8 +42,13 @@ public class MyTransformer2 implements ClassFileTransformer {
                     method.addLocalVariable("start", CtClass.longType);
                     method.insertBefore("start = System.currentTimeMillis();");
                     String methodName = method.getLongName();
-                    method.insertAfter("if(System.currentTimeMillis()-start> 100){System.out.println(\"" + methodName + " cost(毫秒): \" + (System" +
-                            ".currentTimeMillis() - start)); }");
+//                    method.insertAfter("if(System.currentTimeMillis()-start> 100){System.out.println(\"" + methodName + " cost(毫秒): \" + (System" +
+//                            ".currentTimeMillis() - start)); }");
+
+                    method.insertAfter("if(System.currentTimeMillis()-start> "+limitTimeMillis+"){" +
+                            "com.shuke.util.LogUtil.info(\"" + methodName + " cost(毫1秒): \" + (System" +
+                            ".currentTimeMillis() - start)); " +
+                            "}");
                 }catch (CannotCompileException e){
                     continue;
                 }

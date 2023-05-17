@@ -1,6 +1,6 @@
 Manifest-Version: 1.0
-Premain-Class: test.MyAgent
-Agent-Class: test.MyAgent
+Premain-Class: com.shuke.agent.MonitorAgent
+Agent-Class: com.shuke.agent.MonitorAgent
 Can-Retransform-Classes: true
 Can-Redefine-Classes: true
 
