@@ -7,11 +7,11 @@ public class MonitorAgent {
         System.out.println("Hi, I'm agent!");
 
 //        inst.addTransformer(new MyTransformer());
-        inst.addTransformer(new MonitorTransformer2());
+        inst.addTransformer(new MonitorTransformer());
     }
 
     public static void agentmain(String agentArgs, Instrumentation inst) {
         System.out.println("agentmain");
-        inst.addTransformer(new MonitorTransformer2());
+        inst.addTransformer(new MonitorTransformer());
     }
 }
