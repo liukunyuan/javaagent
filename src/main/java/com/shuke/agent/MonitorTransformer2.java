@@ -136,7 +136,7 @@ public class MonitorTransformer2 implements ClassFileTransformer {
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append("try{");
         for (String arg : params) {
-            stringBuilder.append("com.shuke.util.LogUtil.info(\"" + methodName + " cost(毫秒): \" +monitorEnd+\",\"+com.alibaba.fastjson.JSONObject.toJSONString("+arg+"));");
+            stringBuilder.append("com.shuke.util.LogUtil.info(\"" + methodName + " cost(毫秒): \" +monitorEnd+\","+arg+":\"+com.alibaba.fastjson.JSONObject.toJSONString("+arg+"));");
         }
         stringBuilder.append(" }catch (Exception e){}");
         return stringBuilder.toString();
