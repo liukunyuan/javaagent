@@ -55,7 +55,7 @@
 
 	</dependencies>
 	<build>
-		<finalName>myagent</finalName>
+		<finalName>monitoragent</finalName>
 		<plugins>
 			<plugin>
 				<artifactId>maven-assembly-plugin</artifactId>
