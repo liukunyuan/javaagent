@@ -6,6 +6,12 @@ import com.shuke.util.LogUtil;
 import java.util.Arrays;
 
 public class MyAgentTest {
+    /**
+     * java -javaagent:monitoragent-jar-with-dependencies.jar=test.config  -cp monitoragent-jar-with-dependencies.jarom.shuke.agent.MyAgentTest
+     *
+     * @param args
+     * @throws InterruptedException
+     */
     public static void main(String[] args) throws InterruptedException {
         String className = Class.class.getName();
         String methodName = "main";
