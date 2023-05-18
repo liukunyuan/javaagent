@@ -6,7 +6,6 @@ import javax.xml.bind.Element;
 
 public class LogUtil {
 
-    public  static ThreadLocal<String> LOCAL_VAR = new ThreadLocal<String>();
 
     private static final Logger LOG = LoggerFactory.getLogger(LogUtil.class);
     public static void info(String str){

@@ -53,10 +53,8 @@ public class MonitorTransformer2 implements ClassFileTransformer {
             }
         }
         if (!monitor) {
-            LOG.info("classname:{},不监控",className);
             return null;
         }
-        LOG.info("classname:{},准备监控",className);
         CtClass cl = null;
         try {
             ClassPool classPool = ClassPool.getDefault();
