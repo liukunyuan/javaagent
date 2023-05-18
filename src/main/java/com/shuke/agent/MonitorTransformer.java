@@ -23,8 +23,6 @@ import java.util.List;
  */
 public class MonitorTransformer implements ClassFileTransformer {
 
-    final static String prefix = "\nlong startTime = System.currentTimeMillis();\n";
-    final static String postfix = "\nlong endTime = System.currentTimeMillis();\n";
     // 超过500ms才打印
     final static int limitTimeMillis = 500;
 

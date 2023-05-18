@@ -17,7 +17,6 @@ public class MonitorAgent {
 
     private static final Logger LOG = LoggerFactory.getLogger(MonitorAgent.class);
     public static void premain(String args, Instrumentation inst){
-        System.out.println("Hi, I'm agent!");
         System.out.println("args:"+args);
         if(StringUtils.isBlank(args)){
             LOG.error("配置文件为空，跳过监控");
@@ -30,12 +29,10 @@ public class MonitorAgent {
             return ;
         }
         LOG.info(configList.toString());
-//        inst.addTransformer(new MyTransformer());
         inst.addTransformer(new MonitorTransformer2(configList));
     }
 
     public static void agentmain(String agentArgs, Instrumentation inst) {
-        System.out.println("agentmain");
         premain(agentArgs,inst);
     }
 
