@@ -10,8 +10,8 @@
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.build.target>1.8</project.build.target>
-<!--		<scope.value>provided</scope.value>-->
-		<scope.value>compile</scope.value>
+		<scope.value>provided</scope.value>
+<!--		<scope.value>compile</scope.value>-->
 	</properties>
 
 	<dependencies>

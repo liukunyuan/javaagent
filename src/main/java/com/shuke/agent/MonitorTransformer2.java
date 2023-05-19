@@ -4,15 +4,14 @@ import com.shuke.model.Config;
 import javassist.*;
 import javassist.bytecode.CodeAttribute;
 import javassist.bytecode.LocalVariableAttribute;
+import javassist.bytecode.MethodInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.ByteArrayInputStream;
 import java.lang.instrument.ClassFileTransformer;
 import java.security.ProtectionDomain;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 /**
  * 检测方法的执行时间
@@ -36,19 +35,22 @@ public class MonitorTransformer2 implements ClassFileTransformer {
                             ProtectionDomain protectionDomain, byte[] classfileBuffer) {
         // 这里我们限制下，只针对目标包下进行耗时统计
         className = className.replace("/", ".");
-        if (className.startsWith("java") || className.startsWith("sun")) {
+        if (className.startsWith("java")
+                || className.startsWith("sun")
+                || className.startsWith("com.alibaba.fastjson")
+        ) {
             return null;
         }
 
-        LOG.info(configList.toString());
+        LOG.debug(configList.toString());
         Iterator<Config> iterator = this.configList.iterator();
         boolean monitor = false;
-        Config thisConfig=null;
+        Config thisConfig = null;
         while (iterator.hasNext()) {
             Config next = iterator.next();
             if (className.contains(next.getClassName())) {
                 monitor = true;
-                thisConfig=next;
+                thisConfig = next;
                 break;
             }
         }
@@ -65,9 +67,18 @@ public class MonitorTransformer2 implements ClassFileTransformer {
                     /**
                      * 过滤本地方法,否则会报
                      */
-                    if (Modifier.isNative(method.getModifiers())) {
+                    MethodInfo methodInfo = method.getMethodInfo();
+
+                    if (Modifier.isNative(method.getModifiers())
+                            || Modifier.isAbstract( method.getModifiers() )
+                            || Modifier.isInterface( method.getModifiers() )
+                            || ! methodInfo.isMethod()
+
+                    ) {
                         continue;
                     }
+
+
 
 
                     method.addLocalVariable("monitor_Start", CtClass.longType);
@@ -77,17 +88,17 @@ public class MonitorTransformer2 implements ClassFileTransformer {
 
 
                     String printMethodParams = "";
-                    if(thisConfig.isPrintArgs()){
+                    if (thisConfig.isPrintArgs()) {
                         try {
-                            List<String> paramNames = getParamNames(method);
+                            List<String> paramNames = getParamNames(method, cl);
+                            LOG.debug(paramNames.toString());
                             if (null != paramNames && paramNames.size() > 0) {
                                 printMethodParams = createJavaString(methodName, paramNames);
                             }
                         } catch (Exception e) {
-                        LOG.debug(e.getMessage(),e);
+                            LOG.error(e.getMessage()+methodName, e);
                         }
                     }
-
 
 
                     String body = "if(System.currentTimeMillis()-monitor_Start> " + thisConfig.getLimitTimeMillis() + "){" +
@@ -98,7 +109,7 @@ public class MonitorTransformer2 implements ClassFileTransformer {
                     method.insertAfter(body);
                 } catch (CannotCompileException e) {
 //                    e.printStackTrace();
-                    LOG.debug(e.getMessage(),e);
+                    LOG.error(e.getMessage()+method.getLongName(), e);
                     continue;
                 }
             }
@@ -106,33 +117,34 @@ public class MonitorTransformer2 implements ClassFileTransformer {
             byte[] transformed = cl.toBytecode();
             return transformed;
         } catch (Exception e) {
-            LOG.debug(e.getMessage(),e);
+            LOG.error(e.getMessage(), e);
         }
         return classfileBuffer;
     }
 
 
-    private static List<String> getParamNames(CtMethod ctMethod) {
+    private static List<String> getParamNames(CtMethod ctMethod, CtClass cc) throws NotFoundException {
         List<String> paramNames = new ArrayList<>();
-        try {
-            // 使用javassist的反射方法的参数名
-            javassist.bytecode.MethodInfo methodInfo = ctMethod.getMethodInfo();
-            CodeAttribute codeAttribute = methodInfo.getCodeAttribute();
-            LocalVariableAttribute attr = (LocalVariableAttribute) codeAttribute.getAttribute(LocalVariableAttribute.tag);
-            if (attr != null) {
-                int len = ctMethod.getParameterTypes().length;
-                // 非静态的成员函数的第一个参数是this
-                int pos = Modifier.isStatic(ctMethod.getModifiers()) ? 0 : 1;
-                for (int i = 0; i < len; i++) {
-                    paramNames.add(attr.variableName(i + pos));
-                }
+        // 使用javassist的反射方法的参数名
+        javassist.bytecode.MethodInfo methodInfo = ctMethod.getMethodInfo();
+        CodeAttribute codeAttribute = methodInfo.getCodeAttribute();
+        LocalVariableAttribute attr = (LocalVariableAttribute) codeAttribute.getAttribute(LocalVariableAttribute.tag);
+        if (attr != null) {
 
-            }
-            return paramNames;
-        } catch (NotFoundException e) {
-            e.printStackTrace();
-            return null;
+            int len = ctMethod.getParameterTypes().length;
+            String[] parameterNames = new String[len];
+            TreeMap<Integer, String> sortMap = new TreeMap<Integer, String>();
+            for (int i = 0; i < attr.tableLength(); i++)
+                sortMap.put(attr.index(i), attr.variableName(i));
+            int pos = Modifier.isStatic(ctMethod.getModifiers()) ? 0 : 1;
+            parameterNames = Arrays.copyOfRange(sortMap.values().toArray(new String[0]), pos, parameterNames.length + pos);
+
+
+            return Arrays.asList(parameterNames);
+
         }
+
+        return null;
     }
 
 
@@ -144,7 +156,7 @@ public class MonitorTransformer2 implements ClassFileTransformer {
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append("try{");
         for (String arg : params) {
-            stringBuilder.append("com.shuke.util.LogUtil.info(\"" + methodName + " cost(毫秒): \" +monitor_End+\"," + arg + ":\"+com.alibaba.fastjson.JSONObject.toJSONString(" + arg + "));");
+            stringBuilder.append("com.shuke.util.LogUtil.info(\"" + methodName + " cost(毫秒): \" +monitor_End+\"," + arg + ":\"+com.shuke.util.LogUtil.parse(" + arg + "));");
         }
         stringBuilder.append(" }catch (Exception e){}");
         return stringBuilder.toString();
