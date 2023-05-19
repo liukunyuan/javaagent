@@ -9,7 +9,7 @@ import java.util.Arrays;
 public class MyAgentTest {
     /**
      * java -javaagent:monitoragent-jar-with-dependencies.jar=test.config  -cp monitoragent-jar-with-dependencies.jar com.shuke.agent.MyAgentTest
-     *
+     * mvn  assembly:assembly
      * @param args
      * @throws InterruptedException
      */

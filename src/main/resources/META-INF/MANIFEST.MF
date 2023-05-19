@@ -1,5 +1,5 @@
 Manifest-Version: 1.0
-Premain-Class: com.shuke.agent.MonitorAgent
+Premain-Class: org.itstack.demo.agent.MonitorAgent
 Agent-Class: com.shuke.agent.MonitorAgent
 Can-Retransform-Classes: true
 Can-Redefine-Classes: true
