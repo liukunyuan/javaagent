@@ -27,6 +27,15 @@ public class ApiTest {
             new ApiTest().http_lt1("hello3",3433L);
         }).start();
 
+
+        new Thread(() -> {
+            new ApiTest().http_lt1("hello3",3433L);
+        }).start();
+
+        new Thread(() -> {
+            new ApiTest().http_lt1("hello3",3433L);
+        }).start();
+
     }
 
 

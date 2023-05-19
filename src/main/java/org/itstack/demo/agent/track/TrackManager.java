@@ -1,11 +1,14 @@
 package org.itstack.demo.agent.track;
 
+import com.alibaba.ttl.TransmittableThreadLocal;
+
 import java.util.Stack;
 
 
 public class TrackManager {
 
-    private static final ThreadLocal<Stack<String>> track = new ThreadLocal<Stack<String>>();
+//    private static final ThreadLocal<Stack<String>> track = new ThreadLocal<Stack<String>>();
+    private static final TransmittableThreadLocal<Stack<String>> track = new TransmittableThreadLocal<Stack<String>>();
 
     private static String createSpan() {
         Stack<String> stack = track.get();
