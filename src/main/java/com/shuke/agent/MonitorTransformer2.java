@@ -96,7 +96,7 @@ public class MonitorTransformer2 implements ClassFileTransformer {
                                 printMethodParams = createJavaString(methodName, paramNames);
                             }
                         } catch (Exception e) {
-                            LOG.error(e.getMessage()+methodName, e);
+                            LOG.debug(e.getMessage()+methodName, e);
                         }
                     }
 
@@ -109,7 +109,7 @@ public class MonitorTransformer2 implements ClassFileTransformer {
                     method.insertAfter(body);
                 } catch (CannotCompileException e) {
 //                    e.printStackTrace();
-                    LOG.error(e.getMessage()+method.getLongName(), e);
+                    LOG.debug(e.getMessage()+method.getLongName(), e);
                     continue;
                 }
             }
