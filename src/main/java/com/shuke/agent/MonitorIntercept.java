@@ -25,23 +25,27 @@ public class MonitorIntercept {
                                    @SuperCall Callable<?> callable) throws Exception {
         long monitor_start = System.currentTimeMillis();
         String entrySpan = "";
+        String linkId = null;
         try {
-            String linkId = TrackManager.getCurrentSpan();
-            if (null == linkId) {
-                linkId = UUID.randomUUID().toString();
-                TrackContext.setLinkId(linkId);
+            // 获取link id，随机采样
+            if(getRandomNum() <= Constant.finalLimitSample ){
+                linkId = TrackManager.getCurrentSpan();
+                if (null == linkId ) {
+                    linkId = UUID.randomUUID().toString();
+                    TrackContext.setLinkId(linkId);
+                }
+                entrySpan = TrackManager.createEntrySpan();
             }
-            entrySpan = TrackManager.createEntrySpan();
 
+
+            // 业务逻辑
             Object call = callable.call();
 
 
             try {
                 long monitor_time = System.currentTimeMillis() - monitor_start;
-                /**
-                 * 默认 每10条取一条，毫秒数大于500
-                 */
-                if (getRandomNum() > Constant.finalLimitSample || monitor_time < Constant.finalLimitTimeMillis || method.toString().contains(".call() ")) {
+
+                if (null == linkId || monitor_time < Constant.finalLimitTimeMillis || method.toString().contains(".call() ")) {
                     return call;
                 }
 
@@ -68,7 +72,9 @@ public class MonitorIntercept {
 
             return call;
         } finally {
-            TrackManager.getExitSpan();
+            if (null != linkId){
+                TrackManager.getExitSpan();
+            }
         }
     }
 

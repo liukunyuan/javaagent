@@ -51,7 +51,8 @@ public class MonitorAgent {
                                                     TypeDescription typeDescription,
                                                     ClassLoader classLoader,
                                                     JavaModule javaModule) {
-                return builder.method(ElementMatchers.<MethodDescription>any().and(ElementMatchers.isMethod()))
+                return builder.method(ElementMatchers.<MethodDescription> any()
+                                .and(ElementMatchers.isMethod()))
                         .intercept(MethodDelegation.to(MonitorIntercept.class));
             }
         };
@@ -66,6 +67,8 @@ public class MonitorAgent {
 //                .with(AgentBuilder.RedefinitionStrategy.RETRANSFORMATION)
                 .ignore(ElementMatchers.<TypeDescription>nameStartsWith("java")
                         .or(ElementMatchers.<TypeDescription>nameStartsWith("sun"))
+                        .or(ElementMatchers.<TypeDescription>nameStartsWith("jdk"))
+                        .or(ElementMatchers.<TypeDescription>nameStartsWith("com.alibaba.ttl"))
                         .or(ElementMatchers.<TypeDescription>nameStartsWith("org.slf4j."))
                         .or(ElementMatchers.<TypeDescription>nameStartsWith("org.groovy."))
                         .or(ElementMatchers.<TypeDescription>nameContains("javassist"))
@@ -90,6 +93,7 @@ public class MonitorAgent {
                             }
                         }
                         if (!monitor) {
+                            LOG.info("拒绝:"+className);
                             return false;
                         }
 

@@ -5,7 +5,7 @@ import org.apache.commons.lang3.ClassUtils;
 
 public class MyAgentTest {
     /**
-     * java -javaagent:monitoragent-jar-with-dependencies.jar=test.config  -cp monitoragent-jar-with-dependencies.jar com.shuke.agent.MyAgentTest
+     *  java -javaagent:monitoragent-jar-with-dependencies.jar=test.config  -cp monitoragent-jar-with-dependencies.jar com.test.agent.MyAgentTest
      * mvn  assembly:assembly
      * @param args
      * @throws InterruptedException
