@@ -33,26 +33,29 @@ public class MonitorIntercept {
             }
             entrySpan = TrackManager.createEntrySpan();
 
-            return callable.call();
-        } finally {
+            Object call = callable.call();
+
+
             try {
-                TrackManager.getExitSpan();
                 long monitor_time = System.currentTimeMillis() - monitor_start;
                 /**
                  * 默认 每10条取一条，毫秒数大于500
                  */
-                if (getRandomNum() <= Constant.finalLimitSample && monitor_time >= Constant.finalLimitTimeMillis) {
-                    LOG.info("LinkId:" + entrySpan + " " + method + ":[" + monitor_time + "]毫秒");
-                    if (Constant.printArgs) {
-                        int parameterCount = method.getParameterCount();
-                        for (int i = 0; i < parameterCount; i++) {
-                            if (null == args[i] || StringUtils.isBlank(args[i].toString())) {
-                                continue;
-                            }
-                            LOG.info("LinkId:" + entrySpan + " " + method + ":[" + monitor_time + "]毫秒" + ",入参类型:" + method.getParameterTypes()[i].getTypeName() + ",入参内容:" + LogUtil.parse(args[i]));
-                        }
-                    }
+                if (getRandomNum() > Constant.finalLimitSample || monitor_time < Constant.finalLimitTimeMillis || method.toString().contains(".call() ")) {
+                    return call;
+                }
 
+                // 打印耗时
+                LOG.info("LinkId:" + entrySpan + " " + method + ":[" + monitor_time + "]毫秒");
+                if (Constant.printArgs) {
+                    int parameterCount = method.getParameterCount();
+                    for (int i = 0; i < parameterCount; i++) {
+                        if (null == args[i] || StringUtils.isBlank(args[i].toString())) {
+                            continue;
+                        }
+                        // 打印方法入参
+                        LOG.info("LinkId:" + entrySpan + " " + method + ":[" + monitor_time + "]毫秒" + ",入参类型:" + method.getParameterTypes()[i].getTypeName() + ",入参内容:" + LogUtil.parse(args[i]));
+                    }
                 }
 
 
@@ -60,6 +63,9 @@ public class MonitorIntercept {
                 LOG.debug(e.getMessage(), e);
             }
 
+            return call;
+        } finally {
+            TrackManager.getExitSpan();
         }
     }
 

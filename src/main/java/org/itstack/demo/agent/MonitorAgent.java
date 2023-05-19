@@ -71,6 +71,7 @@ public class MonitorAgent {
                         .or(ElementMatchers.<TypeDescription>nameContains("javassist"))
                         .or(ElementMatchers.<TypeDescription>nameContains("asm"))
                         .or(ElementMatchers.<TypeDescription>nameContains("com.intellij"))
+                        .or(ElementMatchers.<TypeDescription>nameStartsWith("com.alibaba.fastjson"))
                         .or(ElementMatchers.<TypeDescription>nameContains("net.bytebuddy"))
                         .or(ElementMatchers.<TypeDescription>nameContains("org.itstack.demo.agent.track"))
                         .or(ElementMatchers.<TypeDescription>nameContains("reflectasm"))

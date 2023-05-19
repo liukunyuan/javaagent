@@ -19,17 +19,23 @@ public class LogUtil {
         LOG.error(str);
     }
     public static String parse(Object object){
-        if(null==object){
-            return null;
-        }
-        String name = getClassName(object);
+        try{
+            if(null==object){
+                return null;
+            }
+            String name = getClassName(object);
 
-        if("sun".startsWith(name) || "java".startsWith(name)){
-            return ""+object;
-        }else{
-            return com.alibaba.fastjson.JSONObject.toJSONString(object);
+            if("sun".startsWith(name) || "java".startsWith(name)){
+                return ""+object;
+            }else{
+                return com.alibaba.fastjson.JSONObject.toJSONString(object);
+            }
+        }catch (Exception e){
+            LOG.error(e.getMessage(),e);
         }
 
+
+        return  null;
     }
 
     public static String getClassName(Object object) {
