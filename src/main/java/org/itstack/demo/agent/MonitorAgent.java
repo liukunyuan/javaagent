@@ -71,6 +71,7 @@ public class MonitorAgent {
                         .or(ElementMatchers.<TypeDescription>nameContains("javassist"))
                         .or(ElementMatchers.<TypeDescription>nameContains("asm"))
                         .or(ElementMatchers.<TypeDescription>nameContains("com.intellij"))
+                        .or(ElementMatchers.<TypeDescription>nameContains("com.sun"))
                         .or(ElementMatchers.<TypeDescription>nameStartsWith("com.alibaba.fastjson"))
                         .or(ElementMatchers.<TypeDescription>nameContains("net.bytebuddy"))
                         .or(ElementMatchers.<TypeDescription>nameContains("org.itstack.demo.agent.track"))
@@ -78,12 +79,12 @@ public class MonitorAgent {
                 ).type(new ElementMatcher<TypeDescription>() {
                     @Override
                     public boolean matches(TypeDescription typeDefinitions) {
-                        String packageName = typeDefinitions.getPackage().getName();
+                        String className = typeDefinitions.getName();
                         Iterator<Config> iterator = configList.iterator();
                         boolean monitor = false;
                         while (iterator.hasNext()) {
                             Config next = iterator.next();
-                            if (packageName.contains(next.getClassName())) {
+                            if (className.contains(next.getClassName())) {
                                 monitor = true;
                                 break;
                             }

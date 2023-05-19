@@ -1,4 +1,5 @@
 package com.shuke.util;
+import com.alibaba.fastjson.serializer.SerializerFeature;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -28,7 +29,7 @@ public class LogUtil {
             if("sun".startsWith(name) || "java".startsWith(name)){
                 return ""+object;
             }else{
-                return com.alibaba.fastjson.JSONObject.toJSONString(object);
+                return com.alibaba.fastjson.JSONObject.toJSONString(object, SerializerFeature.IgnoreErrorGetter);
             }
         }catch (Exception e){
             LOG.error(e.getMessage(),e);
