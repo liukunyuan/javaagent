@@ -55,10 +55,10 @@ public class MonitorIntercept {
                             continue;
                         }
                         // 打印方法入参
-                        stringBuilder.append("\n入参类型:" + method.getParameterTypes()[i].getTypeName() + ",入参内容:" + LogUtil.parse(args[i]));
+                        stringBuilder.append(",[入参类型:" + method.getParameterTypes()[i].getTypeName() + ",入参内容:" + LogUtil.parse(args[i])+"]");
                     }
                 }
-                LOG.info("LinkId:" + entrySpan + " " + method + ":[" + monitor_time + "]毫秒"+stringBuilder.toString());
+                LOG.info("LinkId:" + entrySpan + " " + method + ":[" + monitor_time + "]毫秒 "+stringBuilder.toString());
 
 
 
