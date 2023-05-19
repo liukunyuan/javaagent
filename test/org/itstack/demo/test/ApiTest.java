@@ -14,22 +14,33 @@ public class ApiTest {
 
     public static void main(String[] args) {
 
+
         //线程一
-        new Thread(() -> new ApiTest().http_lt1()).start();
+        new Thread(() -> new ApiTest().http_lt1("hello",333L)).start();
 
         //线程二
         new Thread(() -> {
-            new ApiTest().http_lt1();
+            new ApiTest().http_lt1("hello",343L);
         }).start();
+
+        new Thread(() -> {
+            new ApiTest().http_lt1("hello3",3433L);
+        }).start();
+
     }
 
 
-    public void http_lt1() {
+    public void http_lt1(String aa,Long bb) {
         System.out.println("测试结果：hi1");
-        http_lt2();
+        http_lt2(aa,98.0d);
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
     }
 
-    public void http_lt2() {
+    public void http_lt2(String hello,double cc) {
         System.out.println("测试结果：hi2");
         http_lt3();
     }

@@ -1,70 +1,96 @@
 package org.itstack.demo.agent;
 
+import com.shuke.model.Config;
+import com.shuke.util.FileUtils;
 import net.bytebuddy.agent.builder.AgentBuilder;
-import net.bytebuddy.asm.Advice;
+import net.bytebuddy.description.method.MethodDescription;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.dynamic.DynamicType;
+import net.bytebuddy.implementation.MethodDelegation;
+import net.bytebuddy.matcher.ElementMatcher;
 import net.bytebuddy.matcher.ElementMatchers;
 import net.bytebuddy.utility.JavaModule;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.lang.instrument.Instrumentation;
+import java.nio.charset.Charset;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 
 
 public class MonitorAgent {
     private static final Logger LOG = LoggerFactory.getLogger(MonitorAgent.class);
 
     //JVM 首先尝试在代理类上调用以下方法
-    public static void premain(String agentArgs, Instrumentation inst) {
-        System.out.println();
+    public static void premain(String args, Instrumentation inst) {
 
-        AgentBuilder agentBuilder = new AgentBuilder.Default();
+        System.out.println("args:" + args);
+        if (StringUtils.isBlank(args)) {
+            LOG.error("配置文件为空，跳过监控");
+            return;
+        }
+        ArrayList<String> configStrList = FileUtils.file2list(args, Charset.defaultCharset().toString());
+        List<Config> configList = MonitorAgent.getConfigList(configStrList);
+        if (null == configList || configList.size() == 0) {
+            LOG.error("配置文件为空，跳过监控");
+            return;
+        }
+        LOG.info(configList.toString());
 
-
-        AgentBuilder.Transformer transformer = (builder, typeDescription, classLoader, javaModule) -> {
-            builder = builder.visit(
-                    Advice.to(MonitorAdvice.class)
-                            .on(ElementMatchers.isMethod()
-                                    .and(ElementMatchers.any()).and(ElementMatchers.not(ElementMatchers.nameStartsWith("main")))));
-
-            return builder;
+        AgentBuilder.Transformer transformer = new AgentBuilder.Transformer() {
+            @Override
+            public DynamicType.Builder<?> transform(DynamicType.Builder<?> builder,
+                                                    TypeDescription typeDescription,
+                                                    ClassLoader classLoader,
+                                                    JavaModule javaModule) {
+                return builder.method(ElementMatchers.<MethodDescription>any().and(ElementMatchers.isMethod()))
+                        .intercept(MethodDelegation.to(MonitorIntercept.class));
+            }
         };
+        /**
+         * 1.type指定了agent拦截的包名，以[com.agent]作为前缀
+         * 2.指定了转换器transformer
+         * 3.将配置安装到Instrumentation
+         * 4.disableClassFormatChanges 禁止修改类名
+         */
+        new AgentBuilder.Default()
+//                .disableClassFormatChanges()
+//                .with(AgentBuilder.RedefinitionStrategy.RETRANSFORMATION)
+                .ignore(ElementMatchers.<TypeDescription>nameStartsWith("java")
+                        .or(ElementMatchers.<TypeDescription>nameStartsWith("sun"))
+                        .or(ElementMatchers.<TypeDescription>nameStartsWith("org.slf4j."))
+                        .or(ElementMatchers.<TypeDescription>nameStartsWith("org.groovy."))
+                        .or(ElementMatchers.<TypeDescription>nameContains("javassist"))
+                        .or(ElementMatchers.<TypeDescription>nameContains("asm"))
+                        .or(ElementMatchers.<TypeDescription>nameContains("com.intellij"))
+                        .or(ElementMatchers.<TypeDescription>nameContains("net.bytebuddy"))
+                        .or(ElementMatchers.<TypeDescription>nameContains("org.itstack.demo.agent.track"))
+                        .or(ElementMatchers.<TypeDescription>nameContains("reflectasm"))
+                ).type(new ElementMatcher<TypeDescription>() {
+                    @Override
+                    public boolean matches(TypeDescription typeDefinitions) {
+                        String packageName = typeDefinitions.getPackage().getName();
+                        Iterator<Config> iterator = configList.iterator();
+                        boolean monitor = false;
+                        while (iterator.hasNext()) {
+                            Config next = iterator.next();
+                            if (packageName.contains(next.getClassName())) {
+                                monitor = true;
+                                break;
+                            }
+                        }
+                        if (!monitor) {
+                            return false;
+                        }
 
-        agentBuilder = agentBuilder.type(ElementMatchers.nameStartsWith("org.itstack.demo.test")).transform(transformer).asDecorator();
-
-        //监听
-        AgentBuilder.Listener listener = new AgentBuilder.Listener() {
-            @Override
-            public void onDiscovery(String s, ClassLoader classLoader, JavaModule javaModule, boolean b) {
-
-            }
-
-            @Override
-            public void onTransformation(TypeDescription typeDescription, ClassLoader classLoader, JavaModule javaModule, boolean b, DynamicType dynamicType) {
-                LOG.info("onTransformation：" + typeDescription);
-
-
-            }
-
-            @Override
-            public void onIgnored(TypeDescription typeDescription, ClassLoader classLoader, JavaModule javaModule, boolean b) {
-
-            }
-
-            @Override
-            public void onError(String s, ClassLoader classLoader, JavaModule javaModule, boolean b, Throwable throwable) {
-
-            }
-
-            @Override
-            public void onComplete(String s, ClassLoader classLoader, JavaModule javaModule, boolean b) {
-
-            }
-
-        };
-
-        agentBuilder.with(listener).installOn(inst);
+                        return true;
+                    }
+                })
+                .transform(transformer)
+                .installOn(inst);
 
     }
 
@@ -73,7 +99,33 @@ public class MonitorAgent {
     }
 
     public static void agentmain(String agentArgs, Instrumentation inst) {
-        premain(agentArgs,inst);
+
+
+        premain(agentArgs, inst);
+    }
+
+    public static List<Config> getConfigList(ArrayList<String> configStrList) {
+        try {
+            if (null == configStrList || configStrList.size() == 0) {
+                return null;
+            }
+            ArrayList<Config> configs = new ArrayList<>();
+            for (String line : configStrList) {
+                if (StringUtils.isBlank(line)) {
+                    continue;
+                }
+                String[] arr = line.split("\\|");
+                Config config = new Config(arr[0], arr[1], arr[2], arr[3]);
+                configs.add(config);
+            }
+
+            return configs;
+        } catch (Exception e) {
+            LOG.error("读取配置文件失败");
+            LOG.error(e.getMessage(), e);
+        }
+        return null;
+
     }
 
 }

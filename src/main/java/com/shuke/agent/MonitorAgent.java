@@ -36,7 +36,7 @@ public class MonitorAgent {
         premain(agentArgs,inst);
     }
 
-    private static List<Config> getConfigList(ArrayList<String> configStrList){
+    public static List<Config> getConfigList(ArrayList<String> configStrList){
         try{
             if(null==configStrList || configStrList.size()==0){
                 return null;
