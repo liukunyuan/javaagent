@@ -1,7 +1,7 @@
 package com.shuke.model;
 
 public class Config {
-    public static int finalLimitTimeMillis;
+
     private String className;
     private String methodName;
     private int limitTimeMillis;
@@ -12,7 +12,6 @@ public class Config {
         this.methodName = methodName;
 
         this.limitTimeMillis = Integer.parseInt(limitTimeMillis);
-        Config.finalLimitTimeMillis = this.limitTimeMillis;
         this.printArgs = printArgs.equals("true")?true:false;
     }
 

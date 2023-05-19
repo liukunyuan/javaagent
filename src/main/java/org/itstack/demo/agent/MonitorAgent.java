@@ -1,7 +1,9 @@
 package org.itstack.demo.agent;
 
 import com.shuke.model.Config;
+import com.shuke.model.Constant;
 import com.shuke.util.FileUtils;
+import com.shuke.util.LogUtil;
 import net.bytebuddy.agent.builder.AgentBuilder;
 import net.bytebuddy.description.method.MethodDescription;
 import net.bytebuddy.description.type.TypeDescription;
@@ -38,6 +40,9 @@ public class MonitorAgent {
             LOG.error("配置文件为空，跳过监控");
             return;
         }
+
+        Constant.finalLimitTimeMillis = configList.get(0).getLimitTimeMillis();
+        Constant.printArgs = configList.get(0).isPrintArgs();
         LOG.info(configList.toString());
 
         AgentBuilder.Transformer transformer = new AgentBuilder.Transformer() {

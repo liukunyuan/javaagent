@@ -1,6 +1,6 @@
 package org.itstack.demo.agent;
 
-import com.shuke.model.Config;
+import com.shuke.model.Constant;
 import com.shuke.util.LogUtil;
 import net.bytebuddy.implementation.bind.annotation.AllArguments;
 import net.bytebuddy.implementation.bind.annotation.Origin;
@@ -35,29 +35,38 @@ public class MonitorIntercept {
 
             return callable.call();
         } finally {
-            long monitor_time = System.currentTimeMillis() - monitor_start;
-            /**
-             * 每10条取一条，毫秒数大于500
-             */
-            if (getRandomNum() % 9 == 0 && monitor_time >= 500) {
-                LOG.info("LinkId:" + entrySpan + " " + method + ":[" + monitor_time + "]毫秒");
-                int parameterCount = method.getParameterCount();
-                for (int i = 0; i < parameterCount; i++) {
-                    if(null==args[i] || StringUtils.isBlank(args[i].toString())){
-                        continue;
+            try {
+                TrackManager.getExitSpan();
+                long monitor_time = System.currentTimeMillis() - monitor_start;
+                /**
+                 * 默认 每10条取一条，毫秒数大于500
+                 */
+                if (getRandomNum() <= Constant.finalLimitSample && monitor_time >= Constant.finalLimitTimeMillis) {
+                    LOG.info("LinkId:" + entrySpan + " " + method + ":[" + monitor_time + "]毫秒");
+                    if (Constant.printArgs) {
+                        int parameterCount = method.getParameterCount();
+                        for (int i = 0; i < parameterCount; i++) {
+                            if (null == args[i] || StringUtils.isBlank(args[i].toString())) {
+                                continue;
+                            }
+                            LOG.info("LinkId:" + entrySpan + " " + method + ":[" + monitor_time + "]毫秒" + ",入参类型:" + method.getParameterTypes()[i].getTypeName() + ",入参内容:" + LogUtil.parse(args[i]));
+                        }
                     }
-                    LOG.info("LinkId:" + entrySpan + " " + method + ":[" + monitor_time + "]毫秒" + ",入参类型:" + method.getParameterTypes()[i].getTypeName() + ",入参内容:" + LogUtil.parse(args[i]));
-                }
-            }
-//            LOG.info("Config.finalLimitTimeMillis:" + Config.finalLimitTimeMillis);
 
-            TrackManager.getExitSpan();
+                }
+
+
+            } catch (Exception e) {
+                LOG.debug(e.getMessage(), e);
+            }
+
         }
     }
 
 
-    public static int getRandomNum() {
-        return (int) (Math.random() * 10 + 1);
+    public static double getRandomNum() {
+        double random = Math.random();
+        return random;
 
     }
 
