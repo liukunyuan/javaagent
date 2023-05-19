@@ -46,7 +46,8 @@ public class MonitorIntercept {
                 }
 
                 // 打印耗时
-                LOG.info("LinkId:" + entrySpan + " " + method + ":[" + monitor_time + "]毫秒");
+                StringBuilder stringBuilder = new StringBuilder();
+
                 if (Constant.printArgs) {
                     int parameterCount = method.getParameterCount();
                     for (int i = 0; i < parameterCount; i++) {
@@ -54,9 +55,11 @@ public class MonitorIntercept {
                             continue;
                         }
                         // 打印方法入参
-                        LOG.info("LinkId:" + entrySpan + " " + method + ":[" + monitor_time + "]毫秒" + ",入参类型:" + method.getParameterTypes()[i].getTypeName() + ",入参内容:" + LogUtil.parse(args[i]));
+                        stringBuilder.append("\n入参类型:" + method.getParameterTypes()[i].getTypeName() + ",入参内容:" + LogUtil.parse(args[i]));
                     }
                 }
+                LOG.info("LinkId:" + entrySpan + " " + method + ":[" + monitor_time + "]毫秒"+stringBuilder.toString());
+
 
 
             } catch (Exception e) {
