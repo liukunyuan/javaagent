@@ -1,6 +1,6 @@
-package com.shuke.agent;
+package com.test.agent;
 
-import com.shuke.model.Config;
+import com.test.model.Config;
 import javassist.*;
 import javassist.bytecode.CodeAttribute;
 import javassist.bytecode.LocalVariableAttribute;

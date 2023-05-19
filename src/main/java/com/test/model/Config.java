@@ -1,4 +1,4 @@
-package com.shuke.model;
+package com.test.model;
 
 public class Config {
 
@@ -7,12 +7,23 @@ public class Config {
     private int limitTimeMillis;
     private boolean printArgs;
 
-    public Config(String className, String methodName, String limitTimeMillis, String printArgs) {
+    private double limitSample;
+
+    public Config(String className, String methodName, String limitTimeMillis, String printArgs,String limitSampleStr) {
         this.className = className;
         this.methodName = methodName;
 
         this.limitTimeMillis = Integer.parseInt(limitTimeMillis);
-        this.printArgs = printArgs.equals("true")?true:false;
+        this.printArgs = printArgs.equals("true") ? true : false;
+        this.limitSample=Double.parseDouble(limitSampleStr);
+    }
+
+    public double getLimitSample() {
+        return limitSample;
+    }
+
+    public void setLimitSample(double limitSample) {
+        this.limitSample = limitSample;
     }
 
     public String getClassName() {

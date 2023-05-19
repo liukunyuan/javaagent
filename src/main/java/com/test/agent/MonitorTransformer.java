@@ -1,21 +1,13 @@
-package com.shuke.agent;
+package com.test.agent;
 
-import com.alibaba.fastjson.JSONObject;
 import javassist.*;
-import javassist.bytecode.AttributeInfo;
 import javassist.bytecode.CodeAttribute;
 import javassist.bytecode.LocalVariableAttribute;
-import javassist.bytecode.MethodInfo;
-import javassist.bytecode.annotation.Annotation;
-import javassist.bytecode.annotation.ArrayMemberValue;
-import javassist.bytecode.annotation.MemberValue;
-import javassist.bytecode.annotation.StringMemberValue;
 
 import java.io.ByteArrayInputStream;
 import java.lang.instrument.ClassFileTransformer;
 import java.security.ProtectionDomain;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 /**

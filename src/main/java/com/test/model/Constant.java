@@ -1,4 +1,4 @@
-package com.shuke.model;
+package com.test.model;
 
 public class Constant {
     // 毫秒数限制

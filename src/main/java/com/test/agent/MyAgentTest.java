@@ -1,10 +1,7 @@
-package com.shuke.agent;
+package com.test.agent;
 
 
-import com.shuke.util.LogUtil;
 import org.apache.commons.lang3.ClassUtils;
-
-import java.util.Arrays;
 
 public class MyAgentTest {
     /**
