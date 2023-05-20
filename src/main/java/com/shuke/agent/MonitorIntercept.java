@@ -28,8 +28,8 @@ public class MonitorIntercept {
         String linkId = null;
         try {
             // 获取link id，随机采样
-            if(getRandomNum() <= Constant.finalLimitSample ){
-                linkId = TrackManager.getCurrentSpan();
+            linkId = TrackManager.getCurrentSpan();
+            if(getRandomNum() <= Constant.finalLimitSample || null!=linkId){
                 if (null == linkId ) {
                     linkId = UUID.randomUUID().toString();
                     TrackContext.setLinkId(linkId);
