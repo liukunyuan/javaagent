@@ -46,6 +46,7 @@ public class MonitorIntercept {
                 long monitor_time = System.currentTimeMillis() - monitor_start;
 
                 if (null == linkId || monitor_time < Constant.finalLimitTimeMillis || method.toString().contains(".call() ")) {
+//                if (null == linkId || monitor_time < Constant.finalLimitTimeMillis ) {
                     return call;
                 }
 
@@ -59,7 +60,7 @@ public class MonitorIntercept {
                             continue;
                         }
                         // 打印方法入参
-                        stringBuilder.append(",[入参类型:" + method.getParameterTypes()[i].getTypeName() + ",入参内容:" + LogUtil.parse(args[i])+"]");
+                        stringBuilder.append(",[类型:" + method.getParameterTypes()[i].getTypeName() + ",内容:" + LogUtil.parse(args[i])+"]");
                     }
                 }
                 LOG.info("LinkId:" + entrySpan + " " + method + ":[" + monitor_time + "]毫秒 "+stringBuilder.toString());
@@ -67,7 +68,7 @@ public class MonitorIntercept {
 
 
             } catch (Exception e) {
-                LOG.debug(e.getMessage(), e);
+                LOG.error(e.getMessage(), e);
             }
 
             return call;
@@ -76,6 +77,8 @@ public class MonitorIntercept {
                 TrackManager.getExitSpan();
             }
         }
+
+
     }
 
 

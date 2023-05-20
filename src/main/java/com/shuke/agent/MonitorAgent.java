@@ -17,6 +17,7 @@ import org.slf4j.LoggerFactory;
 
 import java.lang.instrument.Instrumentation;
 import java.nio.charset.Charset;
+import java.security.ProtectionDomain;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -44,18 +45,17 @@ public class MonitorAgent {
         Constant.printArgs = config.isPrintArgs();
         Constant.finalLimitSample=config.getLimitSample();
         LOG.info(configList.toString());
+        AgentBuilder.Transformer transformer = new AgentBuilder.Transformer(){
 
-        AgentBuilder.Transformer transformer = new AgentBuilder.Transformer() {
             @Override
-            public DynamicType.Builder<?> transform(DynamicType.Builder<?> builder,
-                                                    TypeDescription typeDescription,
-                                                    ClassLoader classLoader,
-                                                    JavaModule javaModule) {
+            public DynamicType.Builder<?> transform(DynamicType.Builder<?> builder, TypeDescription typeDescription, ClassLoader classLoader, JavaModule javaModule, ProtectionDomain protectionDomain) {
+
                 return builder.method(ElementMatchers.<MethodDescription> any()
                                 .and(ElementMatchers.isMethod()))
                         .intercept(MethodDelegation.to(MonitorIntercept.class));
             }
         };
+
         /**
          * 1.type指定了agent拦截的包名，以[com.agent]作为前缀
          * 2.指定了转换器transformer
@@ -64,7 +64,6 @@ public class MonitorAgent {
          */
         new AgentBuilder.Default()
 //                .disableClassFormatChanges()
-//                .with(AgentBuilder.RedefinitionStrategy.RETRANSFORMATION)
                 .ignore(ElementMatchers.<TypeDescription>nameStartsWith("java")
                         .or(ElementMatchers.<TypeDescription>nameStartsWith("sun"))
                         .or(ElementMatchers.<TypeDescription>nameStartsWith("jdk"))
@@ -79,7 +78,8 @@ public class MonitorAgent {
                         .or(ElementMatchers.<TypeDescription>nameContains("net.bytebuddy"))
                         .or(ElementMatchers.<TypeDescription>nameContains("org.itstack.demo.agent.track"))
                         .or(ElementMatchers.<TypeDescription>nameContains("reflectasm"))
-                ).type(new ElementMatcher<TypeDescription>() {
+                )
+                .type(new ElementMatcher<TypeDescription>() {
                     @Override
                     public boolean matches(TypeDescription typeDefinitions) {
                         String className = typeDefinitions.getName();
@@ -93,7 +93,7 @@ public class MonitorAgent {
                             }
                         }
                         if (!monitor) {
-                            LOG.info("拒绝:"+className);
+//                            LOG.info("拒绝:"+className);
                             return false;
                         }
 
