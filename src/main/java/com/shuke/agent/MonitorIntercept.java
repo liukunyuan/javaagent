@@ -63,7 +63,7 @@ public class MonitorIntercept {
                         stringBuilder.append(",[类型:" + method.getParameterTypes()[i].getTypeName() + ",内容:" + LogUtil.parse(args[i])+"]");
                     }
                 }
-                LOG.info("LinkId:" + entrySpan + ", " + method + ":[" + monitor_time + "]毫秒 "+stringBuilder.toString());
+                LOG.info("TRACEID:[" + entrySpan + "], 方法:[" + method + "],耗时:[" + monitor_time + "ms] "+stringBuilder.toString());
 
 
 
