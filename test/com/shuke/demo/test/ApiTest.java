@@ -1,5 +1,7 @@
 package com.shuke.demo.test;
 
+import java.util.Arrays;
+
 /**
  * 线程内方法追踪
  * 博客：http://itstack.org
@@ -13,28 +15,31 @@ package com.shuke.demo.test;
 public class ApiTest {
 
     public static void main(String[] args) {
+        System.out.println(Arrays.asList("38934:/sfsgs".split(":")));
+
+        while(true){
+            //线程一
+            new Thread(() -> new ApiTest().http_lt1("hello",333L)).start();
+
+            //线程二
+            new Thread(() -> {
+                new ApiTest().http_lt1("hello",343L);
+            }).start();
+
+            new Thread(() -> {
+                new ApiTest().http_lt1("hello3",3433L);
+            }).start();
 
 
-        //线程一
-        new Thread(() -> new ApiTest().http_lt1("hello",333L)).start();
+            new Thread(() -> {
+                new ApiTest().http_lt1("hello3",3433L);
+            }).start();
 
-        //线程二
-        new Thread(() -> {
-            new ApiTest().http_lt1("hello",343L);
-        }).start();
+            new Thread(() -> {
+                new ApiTest().http_lt1("hello3",3433L);
+            }).start();
+        }
 
-        new Thread(() -> {
-            new ApiTest().http_lt1("hello3",3433L);
-        }).start();
-
-
-        new Thread(() -> {
-            new ApiTest().http_lt1("hello3",3433L);
-        }).start();
-
-        new Thread(() -> {
-            new ApiTest().http_lt1("hello3",3433L);
-        }).start();
 
     }
 

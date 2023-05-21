@@ -3,7 +3,14 @@ package com.shuke.agent;
 import com.shuke.agent.track.TrackContext;
 import com.shuke.agent.track.TrackManager;
 import com.test.model.Constant;
+import com.test.model.MeterMap;
 import com.test.util.LogUtil;
+import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.Gauge;
+import io.micrometer.core.instrument.Meter;
+import io.micrometer.core.instrument.Timer;
+import io.micrometer.core.instrument.distribution.TimeWindowMax;
+import io.micrometer.core.instrument.step.StepTimer;
 import net.bytebuddy.implementation.bind.annotation.AllArguments;
 import net.bytebuddy.implementation.bind.annotation.Origin;
 import net.bytebuddy.implementation.bind.annotation.RuntimeType;
@@ -13,8 +20,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Method;
+import java.time.Duration;
 import java.util.UUID;
 import java.util.concurrent.Callable;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 
 public class MonitorIntercept {
     private static final Logger LOG = LoggerFactory.getLogger(MonitorIntercept.class);
@@ -23,6 +34,9 @@ public class MonitorIntercept {
     public static Object intercept(@Origin Method method,
                                    @AllArguments Object[] args,
                                    @SuperCall Callable<?> callable) throws Exception {
+
+        String methodName = method.getDeclaringClass().getName()+ "_"+method.getName();
+
         long monitor_start = System.currentTimeMillis();
         String entrySpan = "";
         String linkId = null;
@@ -44,6 +58,35 @@ public class MonitorIntercept {
 
             try {
                 long monitor_time = System.currentTimeMillis() - monitor_start;
+
+                if(!method.toString().contains(".call() ") || method.getName().startsWith("set")){
+//                    Counter counter = MeterMap.counterMap.get(methodName);
+//                    if(null==counter){
+//                        counter = MeterMap.composite.counter(methodName+"_counter");
+//                        MeterMap.counterMap.put(methodName,counter);
+//                    }
+//                    counter.increment();
+
+                    Counter counter = MeterMap.counterMap.get(methodName+"_counter");
+                    if(null==counter){
+                        counter = MeterMap.composite.counter(methodName+"_counter");
+                        MeterMap.counterMap.put(methodName+"_counter",counter);
+                    }
+                    counter.increment();
+
+                    Timer timer = MeterMap.timerMap.get(methodName+"_timer");
+                    if(null==timer){
+                        timer = MeterMap.composite.timer(methodName+"_timer");
+                        MeterMap.timerMap.put(methodName+"_timer",timer);
+                    }
+                    timer.record(monitor_time , TimeUnit.MILLISECONDS);
+
+
+//                    AtomicLong myGauge = MeterMap.prometheusRegistry.gauge(methodName+"_gauge", new AtomicLong(0));
+//                    myGauge.set(monitor_time);
+                }
+
+
 
                 if (null == linkId || monitor_time < Constant.finalLimitTimeMillis || method.toString().contains(".call() ")) {
 //                if (null == linkId || monitor_time < Constant.finalLimitTimeMillis ) {

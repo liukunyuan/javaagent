@@ -1,8 +1,24 @@
 package com.shuke.agent;
 
+import com.sun.net.httpserver.HttpServer;
 import com.test.model.Config;
 import com.test.model.Constant;
+import com.test.model.MeterMap;
 import com.test.util.FileUtils;
+import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.Meter;
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.binder.jvm.ClassLoaderMetrics;
+import io.micrometer.core.instrument.binder.jvm.JvmGcMetrics;
+import io.micrometer.core.instrument.binder.jvm.JvmMemoryMetrics;
+import io.micrometer.core.instrument.binder.jvm.JvmThreadMetrics;
+import io.micrometer.core.instrument.binder.system.ProcessorMetrics;
+import io.micrometer.core.instrument.composite.CompositeMeterRegistry;
+import io.micrometer.core.instrument.config.MeterFilter;
+import io.micrometer.core.instrument.distribution.DistributionStatisticConfig;
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
+import io.micrometer.prometheus.PrometheusConfig;
+import io.micrometer.prometheus.PrometheusMeterRegistry;
 import net.bytebuddy.agent.builder.AgentBuilder;
 import net.bytebuddy.description.method.MethodDescription;
 import net.bytebuddy.description.type.TypeDescription;
@@ -15,12 +31,18 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
+import java.io.OutputStream;
 import java.lang.instrument.Instrumentation;
+import java.net.InetSocketAddress;
 import java.nio.charset.Charset;
 import java.security.ProtectionDomain;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 
 public class MonitorAgent {
@@ -28,6 +50,23 @@ public class MonitorAgent {
 
     //JVM 首先尝试在代理类上调用以下方法
     public static void premain(String args, Instrumentation inst) {
+        String[] arr = args.split(":");
+
+        Pattern pattern = Pattern.compile(
+                "^(?:((?:[\\w.-]+)|(?:\\[.+])):)?" + // host name, or ipv4, or ipv6 address in brackets
+                        "(\\d{1,5}):" +              // port
+                        "(.+)");                     // config file
+
+        Matcher matcher = pattern.matcher(args);
+        if (!matcher.matches()) {
+            throw new IllegalArgumentException("Malformed arguments - " + args);
+        }
+
+        String givenHost = matcher.group(2);
+        args = matcher.group(3);
+
+        startMicrometer(givenHost);
+
 
         System.out.println("args:" + args);
         if (StringUtils.isBlank(args)) {
@@ -93,7 +132,7 @@ public class MonitorAgent {
                             }
                         }
                         if (!monitor) {
-//                            LOG.info("拒绝:"+className);
+                            LOG.info("拒绝:"+className);
                             return false;
                         }
 
@@ -107,6 +146,65 @@ public class MonitorAgent {
 
     //如果代理类没有实现上面的方法，那么 JVM 将尝试调用该方法
     public static void premain(String agentArgs) {
+    }
+
+    private static void startMicrometer(String port){
+        //组合注册表
+        CompositeMeterRegistry composite = new CompositeMeterRegistry();
+        //内存注册表
+        MeterRegistry registry = new SimpleMeterRegistry();
+        composite.add(registry);
+        //普罗米修斯注册表
+        PrometheusMeterRegistry prometheusRegistry = new PrometheusMeterRegistry(PrometheusConfig.DEFAULT);
+        prometheusRegistry.config().meterFilter(
+                new MeterFilter() {
+                    @Override
+                    public DistributionStatisticConfig configure(Meter.Id id, DistributionStatisticConfig config) {
+                        config = DistributionStatisticConfig.builder()
+                                .expiry(Duration.ofMinutes(1))
+                                .build()
+                                .merge(config);
+
+                        if(id.getName().contains("_timer")) {
+                            return DistributionStatisticConfig.builder()
+                                    .percentiles(0.5)
+                                    .build()
+                                    .merge(config);
+                        }
+                        return config;
+                    }
+                });
+
+        new ClassLoaderMetrics().bindTo(prometheusRegistry);
+        new JvmMemoryMetrics().bindTo(prometheusRegistry);
+        new JvmGcMetrics().bindTo(prometheusRegistry);
+        new ProcessorMetrics().bindTo(prometheusRegistry);
+        new JvmThreadMetrics().bindTo(prometheusRegistry);
+
+
+        composite.add(prometheusRegistry);
+        //计数器
+        MeterMap.composite= composite;
+        MeterMap.prometheusRegistry= prometheusRegistry;
+        try {
+            //暴漏8080端口来对外提供指标数据
+            HttpServer server = HttpServer.create(new InetSocketAddress(Integer.parseInt(port)), 0);
+            server.createContext("/prometheus", httpExchange -> {
+                //获取普罗米修斯指标数据文本内容
+                String response = prometheusRegistry.scrape();
+                //指标数据发送给客户端
+                httpExchange.sendResponseHeaders(200, response.getBytes().length);
+                try (OutputStream os = httpExchange.getResponseBody()) {
+                    os.write(response.getBytes());
+                }
+            });
+
+
+            new Thread(server::start).start();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
     }
 
     public static void agentmain(String agentArgs, Instrumentation inst) {
