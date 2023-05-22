@@ -80,8 +80,7 @@ public class MonitorAgent {
             return;
         }
         Config config = configList.get(0);
-        Constant.finalLimitTimeMillis = config.getLimitTimeMillis();
-        Constant.printArgs = config.isPrintArgs();
+        Constant.configList = configList;
         Constant.finalLimitSample=config.getLimitSample();
         LOG.info(configList.toString());
         AgentBuilder.Transformer transformer = new AgentBuilder.Transformer(){
@@ -126,13 +125,13 @@ public class MonitorAgent {
                         boolean monitor = false;
                         while (iterator.hasNext()) {
                             Config next = iterator.next();
-                            if (className.contains(next.getClassName())) {
+                            if (className.startsWith(next.getClassName())) {
                                 monitor = true;
                                 break;
                             }
                         }
                         if (!monitor) {
-                            LOG.info("拒绝:"+className);
+//                            LOG.info("拒绝:"+className);
                             return false;
                         }
 
@@ -223,8 +222,9 @@ public class MonitorAgent {
                 if (StringUtils.isBlank(line)) {
                     continue;
                 }
-                String[] arr = line.split("\\|");
-                Config config = new Config(arr[0], arr[1], arr[2], arr[3],arr[4]);
+                String[] split = line.split(":");
+                String[] arr = split[1].split("\\|");
+                Config config = new Config(split[0],arr[0], arr[1], arr[2], arr[3],arr[4]);
                 configs.add(config);
             }
 

@@ -6,6 +6,8 @@ import org.apache.commons.lang3.ClassUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Arrays;
+
 public class MyAgentTest {
     private static final Logger LOG = LoggerFactory.getLogger(MyAgentTest.class);
 
@@ -18,7 +20,8 @@ public class MyAgentTest {
     public static void main(String[] args) throws InterruptedException {
         String className = Class.class.getName();
         String methodName = "main";
-        String name = "arg0|sfs|fsf";
+        String name = "arg0:sfs|fsf";
+        System.out.println(Arrays.asList(name.split(":")));
 //        System.out.println("com.shuke.util.LogUtil.info("+name+");");
 //        System.out.println("try {com.shuke.util.LogUtil.info(new ObjectMapper().writeValueAsString(\""+name+"\"));} catch (JsonProcessingException e) {};");
         System.out.println( ClassUtils.getName(true));

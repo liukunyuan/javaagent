@@ -2,6 +2,7 @@ package com.shuke.agent;
 
 import com.shuke.agent.track.TrackContext;
 import com.shuke.agent.track.TrackManager;
+import com.test.model.Config;
 import com.test.model.Constant;
 import com.test.model.MeterMap;
 import com.test.util.LogUtil;
@@ -21,6 +22,7 @@ import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Method;
 import java.time.Duration;
+import java.util.Iterator;
 import java.util.UUID;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
@@ -36,6 +38,8 @@ public class MonitorIntercept {
                                    @SuperCall Callable<?> callable) throws Exception {
 
         String methodName = method.getDeclaringClass().getName()+ "_"+method.getName();
+        Config exporterConfig = getExporterConfigByClassName(method.getDeclaringClass().getName());
+        Config fileConfig = getFileConfigByClassName(method.getDeclaringClass().getName());
 
         long monitor_start = System.currentTimeMillis();
         String entrySpan = "";
@@ -43,7 +47,7 @@ public class MonitorIntercept {
         try {
             // 获取link id，随机采样
             linkId = TrackManager.getCurrentSpan();
-            if(getRandomNum() <= Constant.finalLimitSample || null!=linkId){
+            if(null!=fileConfig && (getRandomNum() <= Constant.finalLimitSample || null!=linkId )){
                 if (null == linkId ) {
                     linkId = UUID.randomUUID().toString();
                     TrackContext.setLinkId(linkId);
@@ -57,9 +61,13 @@ public class MonitorIntercept {
 
 
             try {
+                if(null==exporterConfig && null==fileConfig){
+                    return call;
+                }
                 long monitor_time = System.currentTimeMillis() - monitor_start;
 
-                if(!method.toString().contains(".call() ") || method.getName().startsWith("set")){
+                if(null!=exporterConfig
+                        && (!method.toString().contains(".call() ") || method.getName().startsWith("set") )){
 //                    Counter counter = MeterMap.counterMap.get(methodName);
 //                    if(null==counter){
 //                        counter = MeterMap.composite.counter(methodName+"_counter");
@@ -86,9 +94,13 @@ public class MonitorIntercept {
 //                    myGauge.set(monitor_time);
                 }
 
+                if(null==fileConfig){
+                    return call;
+                }
 
 
-                if (null == linkId || monitor_time < Constant.finalLimitTimeMillis || method.toString().contains(".call() ")) {
+
+                if (null == linkId  || monitor_time < fileConfig.getLimitTimeMillis() || method.toString().contains(".call() ")) {
 //                if (null == linkId || monitor_time < Constant.finalLimitTimeMillis ) {
                     return call;
                 }
@@ -96,7 +108,7 @@ public class MonitorIntercept {
                 // 打印耗时
                 StringBuilder stringBuilder = new StringBuilder();
 
-                if (Constant.printArgs) {
+                if (null!=fileConfig && fileConfig.isPrintArgs()) {
                     int parameterCount = method.getParameterCount();
                     for (int i = 0; i < parameterCount; i++) {
                         if (null == args[i] || StringUtils.isBlank(args[i].toString())) {
@@ -120,6 +132,36 @@ public class MonitorIntercept {
                 TrackManager.getExitSpan();
             }
         }
+
+
+    }
+
+    private static Config getExporterConfigByClassName(String className){
+
+
+        Iterator<Config> iterator = Constant.configList.iterator();
+        while(iterator.hasNext()){
+            Config next = iterator.next();
+            if(Constant.exporter.equalsIgnoreCase(next.getType()) && className.startsWith(next.getClassName())){
+                return next;
+            }
+        }
+        return null;
+
+
+    }
+
+    private static Config getFileConfigByClassName(String className){
+
+
+        Iterator<Config> iterator = Constant.configList.iterator();
+        while(iterator.hasNext()){
+            Config next = iterator.next();
+            if(Constant.file.equalsIgnoreCase(next.getType()) && className.startsWith(next.getClassName())){
+                return next;
+            }
+        }
+        return null;
 
 
     }

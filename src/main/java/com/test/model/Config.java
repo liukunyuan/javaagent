@@ -2,6 +2,7 @@ package com.test.model;
 
 public class Config {
 
+    private String type;
     private String className;
     private String methodName;
     private int limitTimeMillis;
@@ -9,13 +10,22 @@ public class Config {
 
     private double limitSample;
 
-    public Config(String className, String methodName, String limitTimeMillis, String printArgs,String limitSampleStr) {
+    public Config(String type,String className, String methodName, String limitTimeMillis, String printArgs,String limitSampleStr) {
+        this.type = type;
         this.className = className;
         this.methodName = methodName;
 
         this.limitTimeMillis = Integer.parseInt(limitTimeMillis);
         this.printArgs = printArgs.equals("true") ? true : false;
         this.limitSample=Double.parseDouble(limitSampleStr);
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
     }
 
     public double getLimitSample() {
