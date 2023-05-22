@@ -10,5 +10,6 @@ public class Constant {
 
     public static String exporter="exporter";
     public static String file="file";
+    public static int meterPort;
 
 }
