@@ -188,7 +188,7 @@ public class MonitorAgent {
         try {
             //暴漏8080端口来对外提供指标数据
             HttpServer server = HttpServer.create(new InetSocketAddress(Integer.parseInt(port)), 0);
-            server.createContext("/prometheus", httpExchange -> {
+            server.createContext("/metrics", httpExchange -> {
                 //获取普罗米修斯指标数据文本内容
                 String response = prometheusRegistry.scrape();
                 //指标数据发送给客户端
