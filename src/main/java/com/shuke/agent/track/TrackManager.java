@@ -44,7 +44,12 @@ public class TrackManager {
             TrackContext.clear();
             return null;
         }
-        return stack.pop();
+        if(stack.isEmpty()){
+            return null;
+        }else{
+            return stack.pop();
+
+        }
     }
 
     public static String getCurrentSpan() {

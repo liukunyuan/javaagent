@@ -62,13 +62,12 @@ public class MonitorAgent {
             throw new IllegalArgumentException("Malformed arguments - " + args);
         }
 
-        String givenHost = matcher.group(2);
+        Constant.meterPort = Integer.parseInt(matcher.group(2));
         args = matcher.group(3);
 
-        startMicrometer(givenHost);
 
 
-        System.out.println("args:" + args);
+        LOG.info("args:" + args);
         if (StringUtils.isBlank(args)) {
             LOG.error("配置文件为空，跳过监控");
             return;
@@ -141,70 +140,18 @@ public class MonitorAgent {
                 .transform(transformer)
                 .installOn(inst);
 
+
+        Micrometer.startMicrometer();
+
+        LOG.info("完成agent init");
+
     }
 
     //如果代理类没有实现上面的方法，那么 JVM 将尝试调用该方法
     public static void premain(String agentArgs) {
     }
 
-    private static void startMicrometer(String port){
-        //组合注册表
-        CompositeMeterRegistry composite = new CompositeMeterRegistry();
-        //内存注册表
-        MeterRegistry registry = new SimpleMeterRegistry();
-        composite.add(registry);
-        //普罗米修斯注册表
-        PrometheusMeterRegistry prometheusRegistry = new PrometheusMeterRegistry(PrometheusConfig.DEFAULT);
-        prometheusRegistry.config().meterFilter(
-                new MeterFilter() {
-                    @Override
-                    public DistributionStatisticConfig configure(Meter.Id id, DistributionStatisticConfig config) {
-                        config = DistributionStatisticConfig.builder()
-                                .expiry(Duration.ofMinutes(1))
-                                .build()
-                                .merge(config);
 
-                        if(id.getName().contains("_timer")) {
-                            return DistributionStatisticConfig.builder()
-                                    .percentiles(0.5)
-                                    .build()
-                                    .merge(config);
-                        }
-                        return config;
-                    }
-                });
-
-        new ClassLoaderMetrics().bindTo(prometheusRegistry);
-        new JvmMemoryMetrics().bindTo(prometheusRegistry);
-        new JvmGcMetrics().bindTo(prometheusRegistry);
-        new ProcessorMetrics().bindTo(prometheusRegistry);
-        new JvmThreadMetrics().bindTo(prometheusRegistry);
-
-
-        composite.add(prometheusRegistry);
-        //计数器
-        MeterMap.composite= composite;
-        MeterMap.prometheusRegistry= prometheusRegistry;
-        try {
-            //暴漏8080端口来对外提供指标数据
-            HttpServer server = HttpServer.create(new InetSocketAddress(Integer.parseInt(port)), 0);
-            server.createContext("/metrics", httpExchange -> {
-                //获取普罗米修斯指标数据文本内容
-                String response = prometheusRegistry.scrape();
-                //指标数据发送给客户端
-                httpExchange.sendResponseHeaders(200, response.getBytes().length);
-                try (OutputStream os = httpExchange.getResponseBody()) {
-                    os.write(response.getBytes());
-                }
-            });
-
-
-            new Thread(server::start).start();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-
-    }
 
     public static void agentmain(String agentArgs, Instrumentation inst) {
 
