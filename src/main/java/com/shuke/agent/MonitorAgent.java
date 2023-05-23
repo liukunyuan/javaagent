@@ -1,24 +1,8 @@
 package com.shuke.agent;
 
-import com.sun.net.httpserver.HttpServer;
-import com.test.model.Config;
-import com.test.model.Constant;
-import com.test.model.MeterMap;
-import com.test.util.FileUtils;
-import io.micrometer.core.instrument.Counter;
-import io.micrometer.core.instrument.Meter;
-import io.micrometer.core.instrument.MeterRegistry;
-import io.micrometer.core.instrument.binder.jvm.ClassLoaderMetrics;
-import io.micrometer.core.instrument.binder.jvm.JvmGcMetrics;
-import io.micrometer.core.instrument.binder.jvm.JvmMemoryMetrics;
-import io.micrometer.core.instrument.binder.jvm.JvmThreadMetrics;
-import io.micrometer.core.instrument.binder.system.ProcessorMetrics;
-import io.micrometer.core.instrument.composite.CompositeMeterRegistry;
-import io.micrometer.core.instrument.config.MeterFilter;
-import io.micrometer.core.instrument.distribution.DistributionStatisticConfig;
-import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
-import io.micrometer.prometheus.PrometheusConfig;
-import io.micrometer.prometheus.PrometheusMeterRegistry;
+import com.shuke.agent.model.Config;
+import com.shuke.agent.model.Constant;
+import com.shuke.agent.util.FileUtils;
 import net.bytebuddy.agent.builder.AgentBuilder;
 import net.bytebuddy.description.method.MethodDescription;
 import net.bytebuddy.description.type.TypeDescription;
@@ -31,13 +15,9 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
-import java.io.OutputStream;
 import java.lang.instrument.Instrumentation;
-import java.net.InetSocketAddress;
 import java.nio.charset.Charset;
 import java.security.ProtectionDomain;
-import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -50,6 +30,9 @@ public class MonitorAgent {
 
     //JVM 首先尝试在代理类上调用以下方法
     public static void premain(String args, Instrumentation inst) {
+
+
+
         String[] arr = args.split(":");
 
         Pattern pattern = Pattern.compile(

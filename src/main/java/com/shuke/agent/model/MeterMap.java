@@ -1,4 +1,4 @@
-package com.test.model;
+package com.shuke.agent.model;
 
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.Gauge;

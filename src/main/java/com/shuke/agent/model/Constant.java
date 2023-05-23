@@ -1,4 +1,4 @@
-package com.test.model;
+package com.shuke.agent.model;
 
 import java.util.List;
 

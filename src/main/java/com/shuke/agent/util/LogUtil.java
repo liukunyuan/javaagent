@@ -1,4 +1,4 @@
-package com.test.util;
+package com.shuke.agent.util;
 import com.alibaba.fastjson.serializer.SerializerFeature;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

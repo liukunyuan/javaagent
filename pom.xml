@@ -16,6 +16,14 @@
 
 	<dependencies>
 
+		<!-- https://mvnrepository.com/artifact/com.lmax/disruptor -->
+		<dependency>
+			<groupId>com.lmax</groupId>
+			<artifactId>disruptor</artifactId>
+			<version>3.3.4</version>
+		</dependency>
+
+
 		<dependency>
 			<groupId>io.micrometer</groupId>
 			<artifactId>micrometer-registry-prometheus</artifactId>

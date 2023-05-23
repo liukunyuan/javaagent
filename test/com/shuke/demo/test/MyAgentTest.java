@@ -18,6 +18,9 @@ public class MyAgentTest {
      * @throws InterruptedException
      */
     public static void main(String[] args) throws InterruptedException {
+
+
+
         String className = Class.class.getName();
         String methodName = "main";
         String name = "arg0:sfs|fsf";

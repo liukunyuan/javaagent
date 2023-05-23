@@ -46,7 +46,6 @@ public class TrackManager {
         }
         try {
             return stack.pop();
-
         } catch (Exception e) {
             TrackContext.clear();
             return null;

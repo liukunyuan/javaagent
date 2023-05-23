@@ -1,5 +1,8 @@
 package com.shuke.demo.test;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.Arrays;
 
 /**
@@ -13,6 +16,7 @@ import java.util.Arrays;
  * -javaagent:D:\code\javaagent\target\monitoragent-jar-with-dependencies.jar=testargs
  */
 public class ApiTest {
+    private static final Logger LOG = LoggerFactory.getLogger(ApiTest.class);
 
     public static void main(String[] args) {
         System.out.println(Arrays.asList("38934:/sfsgs".split(":")));
@@ -46,6 +50,8 @@ public class ApiTest {
 
     public void http_lt1(String aa,Long bb) {
         System.out.println("测试结果：hi1");
+        String name = new Thread().getName();
+        LOG.info(name);
         http_lt2(aa,98.0d);
         try {
             Thread.sleep(1000);
