@@ -7,7 +7,7 @@ import java.util.Stack;
 
 public class TrackManager {
 
-//    private static final ThreadLocal<Stack<String>> track = new ThreadLocal<Stack<String>>();
+    //    private static final ThreadLocal<Stack<String>> track = new ThreadLocal<Stack<String>>();
     private static final TransmittableThreadLocal<Stack<String>> track = new TransmittableThreadLocal<Stack<String>>();
 
     private static String createSpan() {
@@ -44,11 +44,12 @@ public class TrackManager {
             TrackContext.clear();
             return null;
         }
-        if(stack.isEmpty()){
-            return null;
-        }else{
+        try {
             return stack.pop();
 
+        } catch (Exception e) {
+            TrackContext.clear();
+            return null;
         }
     }
 
