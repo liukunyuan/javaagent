@@ -104,13 +104,13 @@ public class MonitorIntercept {
                 return call;
             }
 
-            String body = "";
             // 部分方法采样打印耗时
             boolean flag = getRandomNum() <= Constant.finalLimitSample;
             if(!flag && monitor_time < fileConfig.getLimitTimeMillisPrintArgs() ){
                 // 不需要采样，并且执行时间小于阈值，那么直接返回结果
                 return call;
             }
+            String body = "";
             if ( fileConfig.isPrintArgs() || monitor_time >= fileConfig.getLimitTimeMillisPrintArgs() ) {
                 // 打印耗时
                 StringBuilder stringBuilder = new StringBuilder();
