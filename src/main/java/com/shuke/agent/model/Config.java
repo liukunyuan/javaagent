@@ -8,9 +8,18 @@ public class Config {
     private int limitTimeMillis;
     private boolean printArgs;
 
+    private int limitTimeMillisPrintArgs;
+
     private double limitSample;
 
-    public Config(String type,String className, String methodName, String limitTimeMillis, String printArgs,String limitSampleStr) {
+    public Config(String type,
+                  String className,
+                  String methodName,
+                  String limitTimeMillis,
+                  String printArgs,
+                  String limitSampleStr,
+                  String limitTimeMillisPrintArgs
+    ) {
         this.type = type;
         this.className = className;
         this.methodName = methodName;
@@ -18,6 +27,7 @@ public class Config {
         this.limitTimeMillis = Integer.parseInt(limitTimeMillis);
         this.printArgs = printArgs.equals("true") ? true : false;
         this.limitSample=Double.parseDouble(limitSampleStr);
+        this.limitTimeMillisPrintArgs = Integer.parseInt(limitTimeMillisPrintArgs);
     }
 
     public String getType() {

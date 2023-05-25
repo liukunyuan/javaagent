@@ -157,7 +157,7 @@ public class MonitorAgent {
                 }
                 String[] split = line.split(":");
                 String[] arr = split[1].split("\\|");
-                Config config = new Config(split[0],arr[0], arr[1], arr[2], arr[3],arr[4]);
+                Config config = new Config(split[0],arr[0], arr[1], arr[2], arr[3],arr[4],arr[5]);
                 configs.add(config);
             }
 
