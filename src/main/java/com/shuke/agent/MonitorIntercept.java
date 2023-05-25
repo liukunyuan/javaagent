@@ -58,6 +58,7 @@ public class MonitorIntercept {
             }
             long monitor_time = System.currentTimeMillis() - monitor_start;
 
+
             if(null!=exporterConfig
                     && (!method.toString().contains(".call() ") || method.getName().startsWith("set") )){
 //                    Counter counter = MeterMap.counterMap.get(methodName);
@@ -90,6 +91,8 @@ public class MonitorIntercept {
 //                    myGauge.set(monitor_time);
             }
 
+
+
             if(null==fileConfig){
                 return call;
             }
@@ -101,10 +104,16 @@ public class MonitorIntercept {
                 return call;
             }
 
-            // 打印耗时
-            StringBuilder stringBuilder = new StringBuilder();
-
-            if (null!=fileConfig && (fileConfig.isPrintArgs() || monitor_time >= fileConfig.getLimitTimeMillisPrintArgs() )) {
+            String body = "";
+            // 部分方法采样打印耗时
+            boolean flag = getRandomNum() <= Constant.finalLimitSample;
+            if(!flag && monitor_time < fileConfig.getLimitTimeMillisPrintArgs() ){
+                // 不需要采样，并且执行时间小于阈值，那么直接返回结果
+                return call;
+            }
+            if ( fileConfig.isPrintArgs() || monitor_time >= fileConfig.getLimitTimeMillisPrintArgs() ) {
+                // 打印耗时
+                StringBuilder stringBuilder = new StringBuilder();
                 int parameterCount = method.getParameterCount();
                 for (int i = 0; i < parameterCount; i++) {
                     if (null == args[i] || StringUtils.isBlank(args[i].toString())) {
@@ -113,8 +122,10 @@ public class MonitorIntercept {
                     // 打印方法入参
                     stringBuilder.append(",[类型:" + method.getParameterTypes()[i].getTypeName() + ",内容:" + LogUtil.parse(args[i])+"]");
                 }
+                body = stringBuilder.toString();
             }
-            LOG.info("TRACEID:[" + Thread.currentThread().getName() + "], 方法:[" + method + "],耗时:[" + monitor_time + "ms] "+stringBuilder.toString());
+
+            LOG.info("TRACEID:[" + Thread.currentThread().getName() + "], 方法:[" + method + "],耗时:[" + monitor_time + "ms] "+body);
 
 
 
