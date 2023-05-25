@@ -120,9 +120,9 @@ public class MonitorIntercept {
 
         } catch (Exception e) {
             LOG.error("warn:"+e.getMessage(), e);
-        }finally {
-            return call;
         }
+        return call;
+
 
     }
 
