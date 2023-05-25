@@ -104,7 +104,7 @@ public class MonitorIntercept {
             // 打印耗时
             StringBuilder stringBuilder = new StringBuilder();
 
-            if (null!=fileConfig && fileConfig.isPrintArgs()) {
+            if (null!=fileConfig && (fileConfig.isPrintArgs() || monitor_time >= fileConfig.getLimitTimeMillisPrintArgs() )) {
                 int parameterCount = method.getParameterCount();
                 for (int i = 0; i < parameterCount; i++) {
                     if (null == args[i] || StringUtils.isBlank(args[i].toString())) {
