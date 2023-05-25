@@ -71,7 +71,9 @@ public class MonitorAgent {
             public DynamicType.Builder<?> transform(DynamicType.Builder<?> builder, TypeDescription typeDescription, ClassLoader classLoader, JavaModule javaModule, ProtectionDomain protectionDomain) {
 
                 return builder.method(ElementMatchers.<MethodDescription> any()
-                                .and(ElementMatchers.isMethod()))
+                                .and(ElementMatchers.isMethod())
+                                .and(ElementMatchers.isPublic())
+                        )
                         .intercept(MethodDelegation.to(MonitorIntercept.class));
             }
         };
@@ -94,6 +96,7 @@ public class MonitorAgent {
                         .or(ElementMatchers.<TypeDescription>nameContains("asm"))
                         .or(ElementMatchers.<TypeDescription>nameContains("com.intellij"))
                         .or(ElementMatchers.<TypeDescription>nameContains("com.sun"))
+                        .or(ElementMatchers.<TypeDescription>nameContains("com.shuke.agent"))
                         .or(ElementMatchers.<TypeDescription>nameStartsWith("com.alibaba.fastjson"))
                         .or(ElementMatchers.<TypeDescription>nameContains("net.bytebuddy"))
                         .or(ElementMatchers.<TypeDescription>nameContains("org.itstack.demo.agent.track"))
