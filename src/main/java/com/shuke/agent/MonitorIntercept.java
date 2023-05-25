@@ -44,8 +44,8 @@ public class MonitorIntercept {
             exporterConfig = getExporterConfigByClassName(method.getDeclaringClass().getName());
             fileConfig = getFileConfigByClassName(method.getDeclaringClass().getName());
             monitor_start = System.currentTimeMillis();
-        }catch (Exception e){
-            LOG.error("warn:"+e.getMessage(), e);
+        }catch (Throwable te){
+            LOG.error("warn:"+te.getMessage(), te);
         }
 
         // 业务逻辑
@@ -129,8 +129,8 @@ public class MonitorIntercept {
 
 
 
-        } catch (Exception e) {
-            LOG.error("warn:"+e.getMessage(), e);
+        }catch (Throwable te){
+            LOG.error("warn:"+te.getMessage(), te);
         }
         return call;
 
