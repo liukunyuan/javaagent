@@ -3,6 +3,8 @@ package com.shuke.agent;
 import com.shuke.agent.model.Config;
 import com.shuke.agent.model.Constant;
 import com.shuke.agent.util.FileUtils;
+import net.bytebuddy.ByteBuddy;
+import net.bytebuddy.agent.ByteBuddyAgent;
 import net.bytebuddy.agent.builder.AgentBuilder;
 import net.bytebuddy.description.method.MethodDescription;
 import net.bytebuddy.description.type.TypeDescription;
@@ -123,7 +125,13 @@ public class MonitorAgent {
                         return true;
                     }
                 })
+
                 .transform(transformer)
+//                .with(AgentBuilder.RedefinitionStrategy.REDEFINITION)
+                //                .with(AgentBuilder.RedefinitionStrategy.RETRANSFORMATION)
+//                .with(AgentBuilder.RedefinitionStrategy.DISABLED)
+
+
                 .installOn(inst);
 
 
